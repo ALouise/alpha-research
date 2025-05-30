@@ -46,38 +46,33 @@ def train_ridge_on_fundamental_alpha(dataset: pd.DataFrame) -> Tuple[Dict[str, f
     return weights, model, scaler, df_clean
 
 def plot_analyse_alpha_target(df_clean):
-    # Régression linéaire
     slope, intercept, r_value, p_value, std_err = linregress(df_clean["alpha"], df_clean["target"])
     r2 = r_value**2
     corr, pval_corr = pearsonr(df_clean["target"], df_clean["alpha"])
 
-    # Affichage des paramètres
-    print(f"Régression linéaire :")
-    print(f"  pente (slope)       = {slope:.4f}")
+    print("Linear regression:")
+    print(f"  slope               = {slope:.4f}")
     print(f"  intercept           = {intercept:.4f}")
     print(f"  R² (from linregress)= {r2:.4f}")
     print(f"  Corr (Pearson)      = {corr:.4f}")
-    print(f"  p-value régression  = {p_value:.4g}")
+    print(f"  p-value regression  = {p_value:.4g}")
     print(f"  p-value Pearson     = {pval_corr:.4g}")
-    print(f"  erreur std pente    = {std_err:.4g}")
+    print(f"  std error of slope  = {std_err:.4g}")
 
-    # Données pour la droite
     x_vals = df_clean["alpha"]
     y_vals = slope * x_vals + intercept
 
-    # Plot
     plt.figure(figsize=(8, 6))
     sns.scatterplot(data=df_clean, x="alpha", y="target", label="Points")
-    plt.plot(x_vals, y_vals, color="red", linestyle="--", label="Régression linéaire")
+    plt.plot(x_vals, y_vals, color="red", linestyle="--", label="Linear regression")
     plt.title(f"Alpha vs Target\nR² = {r2:.3f}, Corr = {corr:.3f} (p={pval_corr:.3g})")
-    plt.xlabel("Alpha (prédit)")
-    plt.ylabel("Target (réel)")
+    plt.xlabel("Alpha (predicted)")
+    plt.ylabel("Target (actual)")
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
     plt.show()
 
-    # Retour des paramètres utiles
     return {
         "slope": slope,
         "intercept": intercept,

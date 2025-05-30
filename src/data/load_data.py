@@ -225,8 +225,3 @@ def fetch_all_fundamentals(input_csv: str, output_dir: str, start_year=2020, end
             print(f"Error fetching data for {ticker}: {e}")
 
 
-if __name__ == "__main__":
-    INPUT_CSV = "data/raw/tickers.csv"
-    OUTPUT_DIR = "data/processed/monthly"
-    fetch_all_fundamentals(INPUT_CSV, OUTPUT_DIR)
-

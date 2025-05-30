@@ -22,7 +22,6 @@ def backtest_long_short_neutral(df_clean: pd.DataFrame, quantile=0.25) -> pd.Dat
         if len(long) == 0 or len(short) == 0:
             continue
         
-        # Performance ex-post
         long_return = long["target"].mean()
         short_return = short["target"].mean()
         net_return = long_return - short_return

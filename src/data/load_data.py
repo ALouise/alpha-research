@@ -9,7 +9,7 @@ TICKERS = [
     "MTX.DE",    # MTU Aero Engines
     "LDO.MI",    # Leonardo
     "RR.L",      # Rolls-Royce
-    "BA.L",     # BAE Systems
+    "BA.L",      # BAE Systems
     "BA",        # Boeing
     "RTX",       # RTX Corporation
     "LMT",       # Lockheed Martin

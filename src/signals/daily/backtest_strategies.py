@@ -9,7 +9,6 @@ def backtest_long_only(df):
     df['position'] = df['position'].shift(1)  # Décalage pour éviter le look-ahead
     df['strategy_return'] = df['position'] * df['return_t']
     df['cumulative_return'] = (1 + df['strategy_return']).cumprod()
-
     return df
 
 def backtest_long_short(df):

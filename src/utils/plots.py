@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import yfinance as yf
+import math
 
 def plot_multiple_strategies_performance(df_garch, df_arima, df_lr, df_gbt, benchmark_ticker):
     start = min(df_garch.index.min(), df_arima.index.min(), df_lr.index.min(), df_gbt.index.min())
@@ -183,4 +184,27 @@ def plot_cumulative_returns(df):
     df.plot(figsize=(12, 6), title="Cumulative Returns")
     plt.grid(True)
     plt.tight_layout()
+    plt.show()
+
+def plot_backtest_grid(all_backtest):
+    n = len(all_backtest)
+    cols = 3
+    rows = math.ceil(n / cols)
+    fig, axes = plt.subplots(rows, cols, figsize=(5 * cols, 4 * rows), sharex=False)
+    axes = axes.flatten()
+    for i, elem in enumerate(all_backtest):
+        df, ticker_str = elem
+        ax = axes[i]
+        ax.plot(df.index, df["cumulative_return"], label="Strategy")
+        ax.plot(df.index, df["cumulative_buy_hold"], label="Buy & Hold")
+        ax.set_title(ticker_str)
+        ax.grid(True)
+        ax.legend()
+        ax.tick_params(axis='x', rotation=45)
+
+    for j in range(i + 1, len(axes)):
+        fig.delaxes(axes[j])
+
+    fig.suptitle("Long short strategy on each tickers", fontsize=16)
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
     plt.show()

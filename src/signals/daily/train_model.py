@@ -1,10 +1,5 @@
 import pandas as pd
 import numpy as np
-import yfinance as yf
-from sklearn.linear_model import Ridge
-from lightgbm import LGBMRegressor
-from sklearn.metrics import mean_squared_error, r2_score
-import matplotlib.pyplot as plt
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.linear_model import LinearRegression
 from xgboost import XGBRegressor

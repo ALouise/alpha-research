@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def backtest_long_short_neutral(df_clean: pd.DataFrame, quantile=0.25) -> pd.DataFrame:
     df = df_clean.copy()
     df["date"] = pd.to_datetime(df["date"])

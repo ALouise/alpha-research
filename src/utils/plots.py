@@ -128,3 +128,59 @@ def plot_smoothed_series(df1, df2, label1='predicted', label2='real', window=5):
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.show()
+
+def plot_grid_predictions_by_ticker(df_result, label_model):
+    tickers = df_result["ticker"].unique()
+    n = len(tickers)
+    ncols = 3
+    nrows = (n + ncols - 1) // ncols
+
+    fig, axs = plt.subplots(nrows * 2, ncols, figsize=(5 * ncols, 5 * nrows), sharex=False)
+    fig.suptitle(label_model, fontsize=16, fontweight='bold', y=1.02)
+    axs = axs.reshape(nrows * 2, ncols)  
+    for i, ticker in enumerate(tickers):
+        row = (i // ncols) * 2
+        col = i % ncols
+
+        df_ticker = df_result[df_result["ticker"] == ticker].sort_index()
+        df1 = df_ticker["predict_return_qt"]
+        df2 = df_ticker["return_qt"]
+
+        y_pred = df1.values.flatten()
+        y_true = df2.values.flatten()
+        mask = ~np.isnan(y_pred) & ~np.isnan(y_true)
+        y_pred_valid = y_pred[mask]
+        y_true_valid = y_true[mask]
+        errors = np.abs(y_pred - y_true)
+        rmse = np.sqrt(np.mean((y_pred_valid - y_true_valid) ** 2))
+
+        axs[row, col].plot(df1.index, df1, label="predict")
+        axs[row, col].plot(df2.index, df2, label="real")
+        axs[row, col].set_title(f"{ticker} — RMSE={rmse:.4f}")
+        axs[row, col].legend()
+        axs[row, col].grid(True)
+
+        axs[row + 1, col].bar(df1.index, errors, width=5)
+        axs[row + 1, col].set_ylabel("Abs. Error")
+        axs[row + 1, col].set_xlabel("Date")
+        axs[row + 1, col].grid(True)
+
+    for j in range(i + 1, nrows * ncols):
+        row = (j // ncols) * 2
+        col = j % ncols
+        axs[row, col].axis("off")
+        axs[row + 1, col].axis("off")
+    plt.tight_layout()
+    plt.show()
+
+def plot_sum_cumulative_returns(df):
+    df.sum(axis=1).plot(figsize=(12, 6), title="Sum of Cumulative Returns")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+def plot_cumulative_returns(df):
+    df.plot(figsize=(12, 6), title="Cumulative Returns")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()

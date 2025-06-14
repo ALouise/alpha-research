@@ -1,19 +1,56 @@
-## Global Project: Alpha Research in the Aerospace Sector (US and European Equity Markets)
+# Alpha Research — Aerospace Sector (Equity)
 
-This project focuses on identifying alpha in the aerospace sector within the equity asset class across US and European markets
+This project focuses on identifying alpha in the aerospace sector within the equity asset class across US and European markets.
 
-The multi-strategy approach consists of two distinct alpha signals:
-- **A fundamental alpha** with an annual frequency (initially intended to be monthly, but due to limited data, the signal is currently annual)
-- **A daily alpha** with a daily frequency
+## Fundamental Alpha (Quarterly)
 
-Using these two signals, I design and implement three investment strategies:
-- **Long Only**
-- **Long/Short Symmetrical**
-- **Threshold Strategy**
+- Benchmark: Basket of aerospace stocks  
+- Frequency: Quarterly (2023Q4 to 2025Q1)  
+- Features:  
+  - Net Income  
+  - Gross Profit  
+  - Total Revenue  
+  - Total Debt  
+  - Total Capitalization  
+  - Free Cash Flow  
+- Models:  
+  - Linear Regression (Ordinary Least Squares)  
+  - Ridge Regression  
+  - Lasso Regression  
+- Strategy: Long/Short  
+- Evaluation Criteria:  
+  - CAGR: ?  
+  - Sharpe Ratio: ?  
+  - Max Drawdown: ?  
+  - Alpha: ?  
+  - Information Ratio: ?
 
-Finally, I backtest these strategies and assess their performance using five key indicators:
-- Compound Annual Growth Rate (CAGR)
-- Sharpe Ratio
-- Maximum Drawdown
-- Alpha
-- Information Ratio
+## Daily Alpha (Short-Term)
+
+- Benchmark: Individual stocks and aerospace stock basket  
+- Frequency: Daily (over a few months)  
+- Features:  
+  - Close price  
+  - Return  
+  - 5-day Moving Average  
+- Models:  
+  - Ordinary Least Squares  
+  - Gradient Boosted Trees  
+  - ARIMA  
+  - GARCH  
+- Strategies:  
+  - Long only  
+  - Long/Short  
+  - Long/Short with threshold  
+- Evaluation Criteria:  
+  - CAGR: ?  
+  - Sharpe Ratio: ?  
+  - Max Drawdown: ?  
+  - Alpha: ?  
+  - Information Ratio: ?
+
+## TODO
+
+- Add evaluation metrics for each strategy: P&L, Alpha, IR, Drawdown, Sharpe Ratio  
+- Backtest the fundamental strategy using Ridge and Lasso  
+- Try to compute daily alpha based on fundamental signals

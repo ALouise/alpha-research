@@ -8,29 +8,57 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.linear_model import LinearRegression
 from xgboost import XGBRegressor
+from arch import arch_model
 
 
-
-def predict_arima_returns(df, window, order=(1, 0, 1)):
-    df= df.copy()
-    if 'return_t' not in df.columns:
-        raise ValueError("The DataFrame must contain a 'Return' column.")
+def predict_garch_returns(df, window):
+    df = df.copy()
+    if 'return_t' not in df.columns or 'return_t+1' not in df.columns:
+        raise ValueError("The DataFrame must contain 'return_t' and 'return_t+1' columns.")
     predictions = []
-    actuals = []
+    prediction_dates = []
     for t in range(window, len(df) - 1):
         train_data = df['return_t'].iloc[t - window:t]
-        model = ARIMA(train_data, order=order)
+        train_data = train_data.replace([np.inf, -np.inf], np.nan).dropna()
+        if len(train_data) < window:
+            continue
+        train_data = train_data * 100
+        model = arch_model(train_data, vol='Garch', p=1, q=1, mean='Constant', dist='normal') # constant mean
+        res = model.fit(disp="off")
+        forecast = res.forecast(horizon=1)
+        mean_forecast = forecast.mean.iloc[-1, 0]
+
+        predictions.append(mean_forecast/100)
+        prediction_dates.append(df.index[t + 1])
+    actual_returns = df['return_t+1'].reindex(prediction_dates)
+    return pd.DataFrame({
+        "predict_return_t": predictions,
+        "return_t": actual_returns.values
+    }, index=prediction_dates)
+
+def predict_arima_returns(df, window, order=(1, 0, 1)):
+    df = df.copy()
+
+    if 'return_t' not in df.columns or 'return_t+1' not in df.columns:
+        raise ValueError("The DataFrame must contain 'return_t' and 'return_t+1' columns.")
+
+    predictions = []
+    prediction_dates = []
+
+    for t in range(window, len(df) - 1):
+        train_data = df['return_t'].iloc[t - window:t] 
+        model = ARIMA(train_data, order=order, enforce_invertibility=False )
         res = model.fit()
         forecast = res.forecast(steps=1).iloc[0]
-        
+
         predictions.append(forecast)
-        actuals.append(df['return_t+1'].iloc[t])
+        prediction_dates.append(df.index[t + 1])
+    actual_returns = df['return_t+1'].reindex(prediction_dates)
 
     return pd.DataFrame({
         "predict_return_t": predictions,
-        "return_t": actuals
-    })
-
+        "return_t": actual_returns.values 
+    }, index=prediction_dates)
 
 def predict_linear_returns(df, window):
     result = predict_global_model_returns(df, window, LinearRegression())
@@ -71,139 +99,3 @@ def predict_global_model_returns(df, window, model):
         "predict_return_t": predictions,
         "return_t": actuals
     }, index=index)
-
-
-def train_linear_model(df, target_col="return_t+1"):
-    df = df.dropna()
-    y = df[target_col]
-    X = df.drop(columns=[target_col]).select_dtypes(include=[np.number])
-    split = int(len(df) * 0.8)
-    X_train, X_test = X.iloc[:split], X.iloc[split:]
-    y_train, y_test = y.iloc[:split], y.iloc[split:]
-    model = Ridge()
-    model.fit(X_train, y_train)
-    return model, X_test, y_test
-
-def train_lgbm_model(df, target_col="return_t+1"):
-    df = df.dropna()
-    y = df[target_col]
-    X = df.drop(columns=[target_col]).select_dtypes(include=[np.number])
-    split = int(len(df) * 0.8)
-    X_train, X_test = X.iloc[:split], X.iloc[split:]
-    y_train, y_test = y.iloc[:split], y.iloc[split:]
-    model = LGBMRegressor(n_estimators=200)
-    model.fit(X_train, y_train)
-    return model,  X_test, y_test
-
-def evaluate_model(model, X_test, y_test):
-    y_pred = model.predict(X_test)
-    mse = mean_squared_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
-    hit_rate = (np.sign(y_test) == np.sign(y_pred)).mean()
-
-    print("MSE:", round(mse, 6))
-    print("R²:", round(r2, 4))
-    print("Hit rate:", round(hit_rate, 4))
-
-    plt.figure(figsize=(12, 4))
-    plt.plot(y_test.index, y_test.values, label="True")
-    plt.plot(y_test.index, y_pred, label="Pred", alpha=0.7)
-    plt.legend()
-    plt.title(f"Predicted vs True Returns for {model}")
-    plt.tight_layout()
-    plt.show()
-
-    plt.figure(figsize=(12, 2.5))
-    plt.bar(y_test.index, y_pred - y_test.values)
-    plt.title("Prediction Error")
-    plt.tight_layout()
-    plt.show()
-
-def backtest_strategy(model, X_test, y_test, signal_bull = 1, signal_bear= -1):
-    y_pred = model.predict(X_test)
-    signal = np.where(y_pred > 0, signal_bull, signal_bear)
-    pnl = signal * y_test.values
-    pnl_series = pd.Series(pnl, index=y_test.index)
-    return pnl_series
-
-def compare_strategy_vs_stock(pnl_series, y_test):
-    strat_cum = pnl_series.cumsum()
-    stock_cum = y_test.cumsum()
-
-    df = pd.DataFrame({
-        "Strategy": strat_cum,
-        "Stock": stock_cum
-    })
-
-    df.plot(figsize=(12, 4), title="Cumulative Returns")
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
-
-    strat_total = strat_cum.iloc[-1]
-    stock_total = stock_cum.iloc[-1]
-
-    print("Strategy Return:", round(strat_total * 100, 2), "%")
-    print("Stock Return:", round(stock_total * 100, 2), "%")
-
-
-def create_features_dataframe(ticker: str, start_date:str, end_date:str):
-    df = yf.download(ticker, start_date, end_date, progress=False)
-    df = df[["Close", "Volume"]]
-    df.columns = ["Close", "Volume"]
-    df["return_t+1"] = np.log(df["Close"].shift(-1) / df["Close"])
-    df["return_t"] = np.log(df["Close"] / df["Close"].shift(1))
-    df["sma_5"] = df["Close"].rolling(window=5).mean()
-    df.dropna()
-    return df
-
-def strategy_return(tickers:list, start_date: str, end_date:str, signal_bull=1, signal_bear=-1):
-    strategy_returns = {}
-    benchmark_returns = {}
-
-    for ticker in tickers:
-        try:
-            df_feat = create_features_dataframe(ticker, start_date, end_date)
-            model, X_test, y_test = train_linear_model(df_feat)
-            pnl = backtest_strategy(model, X_test, y_test, signal_bull, signal_bear)
-            strategy_returns[ticker] = pnl
-            benchmark_returns[ticker] = y_test
-        except Exception as e:
-            print(f"Error on {ticker}: {e}")
-    return strategy_returns, benchmark_returns, model
-
-
-def strategy_return_lgbm(tickers:list, start_date: str, end_date:str, signal_bull=1, signal_bear=-1):
-    strategy_returns = {}
-    benchmark_returns = {}
-
-    for ticker in tickers:
-        try:
-            df_feat = create_features_dataframe(ticker, start_date, end_date)
-            model, X_test, y_test = train_lgbm_model(df_feat)
-            pnl = backtest_strategy(model, X_test, y_test, signal_bull, signal_bear)
-            strategy_returns[ticker] = pnl
-            benchmark_returns[ticker] = y_test
-        except Exception as e:
-            print(f"Error on {ticker}: {e}")
-    return strategy_returns, benchmark_returns, model
-
-def compare_portfolio_vs_benchmark(strategy_returns, benchmark_returns, model):
-    df_strat = pd.DataFrame(strategy_returns).dropna(how="any", axis=0)
-    df_bench = pd.DataFrame(benchmark_returns).dropna(how="any", axis=0)
-
-    strat_cum = df_strat.mean(axis=1).cumsum()
-    bench_cum = df_bench.mean(axis=1).cumsum()
-
-    df = pd.DataFrame({
-        "Strategy": strat_cum,
-        "Benchmark": bench_cum
-    })
-
-    df.plot(figsize=(12, 4), title=f"Portfolio Strategy vs Equal-Weighted Benchmark for {model} model")
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
-
-    print("Strategy Return:", round(strat_cum.iloc[-1] * 100, 2), "%")
-    print("Benchmark Return:", round(bench_cum.iloc[-1] * 100, 2), "%")

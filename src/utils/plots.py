@@ -181,6 +181,27 @@ def plot_sum_cumulative_returns(df):
     plt.tight_layout()
     plt.show()
 
+def plot_strategy_vs_benchmark(global_return_df, benchmark_df):
+    common_start = max(global_return_df.index.min(), benchmark_df.index.min())
+    common_end = min(global_return_df.index.max(), benchmark_df.index.max())
+
+    strategy = global_return_df.loc[common_start:common_end].copy()
+    benchmark = benchmark_df.loc[common_start:common_end].sum(axis=1).copy()
+
+    strategy /= strategy.iloc[0]
+    benchmark /= benchmark.iloc[0]
+
+    plt.figure(figsize=(12, 6))
+    strategy.plot(ax=plt.gca(), label="Strategy Global Cumulative Return")
+    benchmark.plot(ax=plt.gca(), label="Benchmark Cumulative Return", linestyle="--")
+    plt.title("Strategy vs Benchmark Cumulative Returns (Rebased)")
+    plt.ylabel("Rebased Cumulative Return")
+    plt.xlabel("Date")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
 def plot_cumulative_returns(df):
     df.plot(figsize=(12, 6), title="Cumulative Returns")
     plt.grid(True)

@@ -17,6 +17,20 @@ def backtest_all_tickers_long_short(df, TICKERS:list):
         all_backtest.append((backtest_ticker_long_short(df, ticker), ticker))
     return all_backtest
 
+def compute_global_cumulative_return(all_backtest):
+    all_curves = []
+
+    for df, _ in all_backtest:
+        temp = df[["cumulative_return"]].copy()
+        temp = temp.rename(columns={"cumulative_return": "cum_return"})
+        temp = temp.resample("D").interpolate()  # interpolation daily
+        all_curves.append(temp)
+
+    df_concat = pd.concat(all_curves, axis=1)
+    df_concat.columns = [f"ticker_{i}" for i in range(len(all_curves))]
+    df_concat = df_concat.ffill().fillna(1)
+    df_concat["global_cumulative_return"] = df_concat.sum(axis=1)
+    return df_concat[["global_cumulative_return"]]
 
 # delete above
 def backtest_long_short_neutral(df_clean: pd.DataFrame, quantile=0.25) -> pd.DataFrame:

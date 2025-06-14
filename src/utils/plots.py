@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import yfinance as yf
 import math
+from sklearn.linear_model import LinearRegression
 
 def plot_multiple_strategies_performance(df_garch, df_arima, df_lr, df_gbt, benchmark_ticker):
     start = min(df_garch.index.min(), df_arima.index.min(), df_lr.index.min(), df_gbt.index.min())
@@ -207,4 +208,24 @@ def plot_backtest_grid(all_backtest):
 
     fig.suptitle("Long short strategy on each tickers", fontsize=16)
     plt.tight_layout(rect=[0, 0, 1, 0.96])
+    plt.show()
+
+def plot_prediction_scatter(df_result):
+    df_result = df_result.dropna(subset=["predict_return_qt", "return_qt"])
+    x = df_result["predict_return_qt"].values.reshape(-1, 1)
+    y = df_result["return_qt"].values.reshape(-1, 1)
+
+    reg = LinearRegression().fit(x, y)
+    y_line = reg.predict(x)
+    r2 = reg.score(x, y)
+
+    plt.figure(figsize=(8, 6))
+    plt.scatter(x, y, alpha=0.6, label="Points")
+    plt.plot(x, y_line, color="red", label=f"Fit line (R² = {r2:.2f})")
+    plt.xlabel("Predicted Return")
+    plt.ylabel("Actual Return")
+    plt.title("Regression Fit: Predicted vs Actual Quarterly Returns")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
     plt.show()

@@ -6,48 +6,28 @@ This project focuses on identifying alpha in the aerospace sector within the equ
 
 - Benchmark: Basket of aerospace stocks  
 - Frequency: Quarterly (2023Q4 to 2025Q1)  
-- Features:  
-  - Net Income  
-  - Gross Profit  
-  - Total Revenue  
-  - Total Debt  
-  - Total Capitalization  
-  - Free Cash Flow  
-- Models:  
-  - Linear Regression (Ordinary Least Squares)  
-  - Ridge Regression  
-  - Lasso Regression  
+- Features: Net Income, Gross Profit, Total Revenue, Total Debt, Total Capitalization, Free Cash Flow  
+- Models: Linear Regression (Ordinary Least Squares), Ridge Regression, Lasso Regression,  
 - Strategy: Long/Short  
-- Evaluation Criteria:  
-  - CAGR: ?  
-  - Sharpe Ratio: ?  
-  - Max Drawdown: ?  
-  - Alpha: ?  
-  - Information Ratio: ?
+- Evaluation Criteria: CAGR: ?, Sharpe Ratio: ?, Max Drawdown: ?, Alpha: ?, Information Ratio: ?
 
 ## Daily Alpha (Short-Term)
 
 - Benchmark: Individual stocks and aerospace stock basket  
 - Frequency: Daily (over a few months)  
-- Features:  
-  - Close price  
-  - Return  
-  - 5-day Moving Average  
-- Models:  
-  - Ordinary Least Squares  
-  - Gradient Boosted Trees  
-  - ARIMA  
-  - GARCH  
-- Strategies:  
-  - Long only  
-  - Long/Short  
-  - Long/Short with threshold  
-- Evaluation Criteria:  
-  - CAGR: ?  
-  - Sharpe Ratio: ?  
-  - Max Drawdown: ?  
-  - Alpha: ?  
-  - Information Ratio: ?
+- Features: Close price, Return, 5-day Moving Average  
+- Models: Ordinary Least Squares, Gradient Boosted Trees, ARIMA, GARCH  
+- Strategies: Long only, Long/Short, Long/Short with threshold  
+- Evaluation Criteria:   CAGR: ?, Sharpe Ratio: ?, Max Drawdown: ?, Alpha: ?, Information Ratio: ?
+
+## Repository Structure
+
+- `notebooks/`  
+  - `evaluations/`: Statistical evaluation of predicted vs actual returns (e.g., RMSE, visual comparisons across models)  
+  - `results/`: Figures and plots of strategy performance vs benchmark  
+
+- `src/`  
+  - Core modules and all implemented functions
 
 ## TODO
 
